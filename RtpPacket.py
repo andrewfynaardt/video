@@ -23,6 +23,8 @@ class RtpPacket:
 		header[1] = (marker << 7) | (pt)
 		header[2] = (seqnum >> 8) & 0xFF
 		header[3] = (seqnum) & 0xFF
+		# What the above does is shifts the seqnum 8 bits to the right and does and and with 11111111 to get the first byte of the seqnum
+        # The second byte is just the seqnum and anded with 11111111 to get the last byte of the seqnum. Below uses the same logic.
 		header[4] = (timestamp >> 24) & 0xFF
 		header[5] = (timestamp >> 16) & 0xFF
 		header[6] = (timestamp >> 8) & 0xFF
