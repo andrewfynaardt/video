@@ -11,28 +11,28 @@ class RtpPacket:
 	def encode(self, version, padding, extension, cc, seqnum, marker, pt, ssrc, payload):
 		"""Encode the RTP packet with header fields and payload."""
 		timestamp = int(time())
-		header = bytearray(HEADER_SIZE)
+		self.header = bytearray(HEADER_SIZE)
 
 		# Fill the header bytearray with RTP header fields
-		header[0] = (version << 6) | (padding << 5) | (extension << 4) | cc  
+		self.header[0] = (version << 6) | (padding << 5) | (extension << 4) | cc  
 		# This takes version as a binary number, i.e. 2 = 10 then shifts it 6 bits to the left so it becomes 10000000
 		# Then paddign is shifted 5 bits to the left, extension 4 bits to the left and cc goes in the last 4 so it needs no shifting. 
 		# We use the bitwise OR to combine the values into a single byte.
         # For this lab version is 2, padding is 0, extension is 0, cc is 0
 		# Overall the above is equivalent to: 10(version) 000000(6 shift bits) | 0 00000 | 0 0000 | 0000 = 10000000
-		header[1] = (marker << 7) | (pt)
-		header[2] = (seqnum >> 8) & 0xFF
-		header[3] = (seqnum) & 0xFF
+		self.header[1] = (marker << 7) | (pt)
+		self.header[2] = (seqnum >> 8) & 0xFF
+		self.header[3] = (seqnum) & 0xFF
 		# What the above does is shifts the seqnum 8 bits to the right and does and and with 11111111 to get the first byte of the seqnum
         # The second byte is just the seqnum and anded with 11111111 to get the last byte of the seqnum. Below uses the same logic.
-		header[4] = (timestamp >> 24) & 0xFF
-		header[5] = (timestamp >> 16) & 0xFF
-		header[6] = (timestamp >> 8) & 0xFF
-		header[7] = (timestamp) & 0xFF
-		header[8] = (ssrc >> 24) & 0xFF
-		header[9] = (ssrc >> 16) & 0xFF
-		header[10] = (ssrc >> 8) & 0xFF
-		header[11] = (ssrc) & 0xFF
+		self.header[4] = (timestamp >> 24) & 0xFF
+		self.header[5] = (timestamp >> 16) & 0xFF
+		self.header[6] = (timestamp >> 8) & 0xFF
+		self.header[7] = (timestamp) & 0xFF
+		self.header[8] = (ssrc >> 24) & 0xFF
+		self.header[9] = (ssrc >> 16) & 0xFF
+		self.header[10] = (ssrc >> 8) & 0xFF
+		self.header[11] = (ssrc) & 0xFF
 
 		# Get the payload from the argument
 		self.payload = payload

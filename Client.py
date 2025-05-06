@@ -34,14 +34,15 @@ class Client:
 		self.teardownAcked = 0
 		self.connectToServer()
 		self.frameNbr = 0
+		self.setupMovie()
 		
 	def createWidgets(self):
 		"""Build GUI."""
-		# Create Setup button
-		self.setup = Button(self.master, width=20, padx=3, pady=3)
-		self.setup["text"] = "Setup"
-		self.setup["command"] = self.setupMovie
-		self.setup.grid(row=1, column=0, padx=2, pady=2)
+		# # Create Setup button
+		# self.setup = Button(self.master, width=20, padx=3, pady=3)
+		# self.setup["text"] = "Setup"
+		# self.setup["command"] = self.setupMovie
+		# self.setup.grid(row=1, column=0, padx=2, pady=2)
 		
 		# Create Play button		
 		self.start = Button(self.master, width=20, padx=3, pady=3)
@@ -55,11 +56,11 @@ class Client:
 		self.pause["command"] = self.pauseMovie
 		self.pause.grid(row=1, column=2, padx=2, pady=2)
 		
-		# Create Teardown button
-		self.teardown = Button(self.master, width=20, padx=3, pady=3)
-		self.teardown["text"] = "Teardown"
-		self.teardown["command"] =  self.exitClient
-		self.teardown.grid(row=1, column=3, padx=2, pady=2)
+		# # Create Teardown button
+		# self.teardown = Button(self.master, width=20, padx=3, pady=3)
+		# self.teardown["text"] = "Teardown"
+		# self.teardown["command"] =  self.exitClient
+		# self.teardown.grid(row=1, column=3, padx=2, pady=2)
 		
 		# Create a label to display the movie
 		self.label = Label(self.master, height=19)
@@ -69,10 +70,10 @@ class Client:
 		"""Setup button handler."""
 		if self.state == self.INIT:
 			self.sendRtspRequest(self.SETUP)
-	
+			
 	def exitClient(self):
 		"""Teardown button handler."""
-		self.sendRtspRequest(self.TEARDOWN)		
+		self.sendRtspRequest(self.TEARDOWN)        
 		self.master.destroy() # Close the gui window
 		os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT) # Delete the cache image from video
 
@@ -142,9 +143,6 @@ class Client:
 	
 	def sendRtspRequest(self, requestCode):
 		"""Send RTSP request to the server."""	
-		#-------------
-		# TO COMPLETE
-		#-------------
 		
 		# Setup request
 		if requestCode == self.SETUP and self.state == self.INIT:
@@ -153,10 +151,10 @@ class Client:
 			self.rtspSeq += 1
 			
 			# Write the RTSP request to be sent.
-			request = f"SETUP {self.fileName} RTSP/1.0\nCSeq: {self.rtspSeq}\nTransport: RTP/UDP; client_port={self.rtpPort}"
+			request = f"SETUP {self.fileName} RTSP/1.0\nCSeq: {self.rtspSeq}\nTransport: RTP/UDP; client_port= {self.rtpPort}"
 			
 			# Keep track of the sent request.
-			self.requestSent = request
+			self.requestSent = self.SETUP
 		
 		# Play request
 		elif requestCode == self.PLAY and self.state == self.READY:
@@ -167,7 +165,7 @@ class Client:
 			request = f"PLAY {self.fileName} RTSP/1.0\nCSeq: {self.rtspSeq}\nSession: {self.sessionId}" 
 			
 			# Keep track of the sent request.
-			self.requestSent = request
+			self.requestSent = self.PLAY
 		
 		# Pause request
 		elif requestCode == self.PAUSE and self.state == self.PLAYING:
@@ -175,10 +173,11 @@ class Client:
 			self.rtspSeq += 1
 
 			# Write the RTSP request to be sent.
-			request = f"PAUSE {self.filename} RTSP/1.0\nCSeq: {self.rtspSeq}\nSession: {self.sessionId}"
+			request = f"PAUSE {self.fileName} RTSP/1.0\nCSeq: {self.rtspSeq}\nSession: {self.sessionId}"
 			
 			# Keep track of the sent request.
-			self.requestSent = request
+			self.requestSent = self.PAUSE
+			
 			
 		# Teardown request
 		elif requestCode == self.TEARDOWN and not self.state == self.INIT:
@@ -188,8 +187,8 @@ class Client:
 			# Write the RTSP request to be sent.
 			request = f"TEARDOWN {self.fileName} RTSP/1.0\nCSeq: {self.rtspSeq}\nSession: {self.sessionId}"
 			
-			# Keep track of the sent request.
-			self.requestSent = request
+			# Keep track of the sent request
+			self.requestSent = self.TEARDOWN
             
 		else:
 			return
@@ -229,9 +228,6 @@ class Client:
 			if self.sessionId == session:
 				if int(lines[0].split(' ')[1]) == 200: 
 					if self.requestSent == self.SETUP:
-						#-------------
-						# TO COMPLETE
-						#-------------
 						# Update RTSP state.
 						self.state = self.READY
 						
@@ -252,9 +248,6 @@ class Client:
 	
 	def openRtpPort(self):
 		"""Open RTP socket binded to a specified port."""
-		#-------------
-		# TO COMPLETE
-		#-------------
 		# Create a new datagram socket to receive RTP packets from the server
 		self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		
@@ -263,7 +256,7 @@ class Client:
 		
 		try:
 			# Bind the socket to the address using the RTP port given by the client user
-			self.rtpSocket.bind(('', self.rtpPort))
+			self.rtpSocket.bind((self.serverAddr, self.rtpPort))
 		except:
 			tkMessageBox.showwarning('Unable to Bind', 'Unable to bind PORT=%d' %self.rtpPort)
 
